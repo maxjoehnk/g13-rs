@@ -1,0 +1,16 @@
+language: rust
+cache: cargo
+
+addons:
+  apt:
+    packages:
+      - build-essential
+      - libudev-dev
+
+before_install:
+  - wget https://github.com/libusb/libusb/archive/v1.0.19.tar.gz -O libusb-1.0.19.tar.gz
+  - tar -zxvf libusb-1.0.19.tar.gz
+  - cd libusb-1.0.19 && ./autogen.sh && ./configure --prefix=/usr && make && sudo make install
+  - pkg-config --list-all
+  - pkg-config --libs libusb-1.0
+  - pkg-config --modversion libusb-1.0
