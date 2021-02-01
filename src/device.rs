@@ -1,15 +1,15 @@
-use crate::Error;
-use libusb::{DeviceHandle, Direction, RequestType, Recipient};
-use libusb_sys::{LIBUSB_REQUEST_TYPE_CLASS, LIBUSB_RECIPIENT_INTERFACE, LIBUSB_ENDPOINT_OUT};
+use crate::G13Error;
+use rusb::{Context, Device, DeviceHandle, Direction};
 use std::time::Duration;
 use crate::consts::{G13_LCD_ENDPOINT, G13_LCD_BUF_SIZE, G13_LCD_BUFFER_SIZE};
+use rusb::constants::{LIBUSB_ENDPOINT_OUT, LIBUSB_REQUEST_TYPE_CLASS, LIBUSB_RECIPIENT_INTERFACE};
 
-pub struct G13<'a> {
-    handle: DeviceHandle<'a>
+pub struct G13 {
+    handle: DeviceHandle<Context>
 }
 
-impl<'a> G13<'a> {
-    pub(crate) fn new(device: libusb::Device) -> Result<G13, Error> {
+impl G13 {
+    pub(crate) fn new(device: Device<Context>) -> Result<G13, G13Error> {
         let mut handle = device.open()?;
         if handle.kernel_driver_active(0)? {
             handle.detach_kernel_driver(0)?;
@@ -24,12 +24,12 @@ impl<'a> G13<'a> {
         Ok(device)
     }
 
-    pub fn clear_lcd(&mut self) -> Result<(), Error> {
+    pub fn clear_lcd(&mut self) -> Result<(), G13Error> {
         let mut buf = [0; G13_LCD_BUFFER_SIZE];
         self.write_lcd(&mut buf)
     }
 
-    pub fn write_lcd(&mut self, buffer: &[u8]) -> Result<(), Error> {
+    pub fn write_lcd(&mut self, buffer: &[u8]) -> Result<(), G13Error> {
         assert_eq!(buffer.len(), G13_LCD_BUFFER_SIZE);
         let mut buf = vec![0; 32];
         buf.extend_from_slice(buffer);
@@ -38,7 +38,7 @@ impl<'a> G13<'a> {
         Ok(())
     }
 
-    pub fn set_key_color(&mut self, color: (u8, u8, u8)) -> Result<(), Error> {
+    pub fn set_key_color(&mut self, color: (u8, u8, u8)) -> Result<(), G13Error> {
         let data = vec![5, color.0, color.1, color.2, 0];
         let result = self.handle.write_control(LIBUSB_REQUEST_TYPE_CLASS | LIBUSB_RECIPIENT_INTERFACE, 9, 0x307, 0, &data, Duration::from_millis(1000))?;
         assert_eq!(result, 5);
@@ -46,7 +46,7 @@ impl<'a> G13<'a> {
     }
 }
 
-impl<'a> std::fmt::Debug for G13<'a> {
+impl<'a> std::fmt::Debug for G13 {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         write!(f, "G13 {{}}")
     }

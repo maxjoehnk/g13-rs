@@ -1,10 +1,7 @@
-#[derive(Debug)]
-pub enum Error {
-    Libusb(libusb::Error)
-}
+use thiserror::Error;
 
-impl From<libusb::Error> for Error {
-    fn from(err: libusb::Error) -> Self {
-        Error::Libusb(err)
-    }
+#[derive(Debug, Error)]
+pub enum G13Error {
+    #[error("Usb error: {0}")]
+    Libusb(#[from] rusb::Error)
 }

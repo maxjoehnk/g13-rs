@@ -1,6 +1,6 @@
 use g13::*;
 
-pub fn main() -> Result<(), Error>{
+pub fn main() -> Result<(), G13Error>{
     let logo = include_bytes!("./logo.lpbm");
 
     let mut manager = G13Manager::new()?;
