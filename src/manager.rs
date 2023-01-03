@@ -1,4 +1,4 @@
-use rusb::{Context, DeviceHandle, UsbContext};
+use rusb::{Context, UsbContext};
 
 use crate::{G13Error, G13};
 use crate::consts::{G13_PRODUCT_ID, G13_VENDOR_ID};
