@@ -27,11 +27,15 @@ impl G13 {
         Ok(device)
     }
 
+    /// Clear the LCD.
     pub fn clear_lcd(&mut self) -> Result<(), G13Error> {
         let buf = [0; G13_LCD_BUFFER_SIZE];
         self.write_lcd(&buf)
     }
 
+    /// Write the given buffer to the lcd.
+    ///
+    /// The buffer should be sized exactly 960 bytes.
     pub fn write_lcd(&mut self, buffer: &[u8]) -> Result<(), G13Error> {
         if buffer.len() != G13_LCD_BUFFER_SIZE {
             return Err(G13Error::InvalidLcdBufferSize(buffer.len(), G13_LCD_BUFFER_SIZE));
@@ -45,8 +49,9 @@ impl G13 {
         Ok(())
     }
 
-    pub fn set_key_color(&mut self, color: (u8, u8, u8)) -> Result<(), G13Error> {
-        let data = vec![5, color.0, color.1, color.2, 0];
+    /// Set the keyboard color to the given red, green and blue bytes.
+    pub fn set_key_color(&mut self, (red, green, blue): (u8, u8, u8)) -> Result<(), G13Error> {
+        let data = vec![5, red, green, blue, 0];
         let result = self.handle.write_control(request_type(Direction::Out, RequestType::Class, Recipient::Interface), 9, G13_SET_KEY_COLOR, G13_INDEX, &data, Duration::from_millis(1000))?;
 
         if result != 5 {
@@ -56,6 +61,7 @@ impl G13 {
         Ok(())
     }
 
+    /// Activate/Deactivate the M1, M2, M3 and MR leds corresponding to the `ModeLeds` flags.
     pub fn set_mode_leds(&mut self, leds: ModeLeds) -> Result<(), G13Error> {
         let data = vec![5, leds.bits(), 0, 0, 0];
         let result = self.handle.write_control(request_type(Direction::Out, RequestType::Class, Recipient::Interface), 9, G13_SET_MODE_LEDS, G13_INDEX, &data, Duration::from_millis(1000))?;
@@ -67,6 +73,9 @@ impl G13 {
         Ok(())
     }
 
+    /// Read input from the device.
+    ///
+    /// This will block until an input is received or until `timeout` is reached.
     pub fn read(&self, timeout: Duration) -> Result<Response, G13Error> {
         let mut data = [0; G13_REPORT_SIZE];
         self.handle.read_interrupt(LIBUSB_ENDPOINT_IN | G13_KEY_ENDPOINT, &mut data, timeout)?;
@@ -97,7 +106,9 @@ impl G13 {
 
 #[derive(Debug, Clone, Copy)]
 pub struct Response {
+    /// The pressed keys.
     pub keys: Keys,
+    /// The (x, y) positions of the joystick.
     pub joystick: (f32, f32),
 }
 
