@@ -1,31 +1,23 @@
-use rusb::{Context, UsbContext};
+use hidapi::HidApi;
 
 use crate::{G13Error, G13};
 use crate::consts::{G13_PRODUCT_ID, G13_VENDOR_ID};
 
 pub struct G13Manager {
-    context: Context
+    hid_api: HidApi
 }
 
 impl G13Manager {
     pub fn new() -> Result<G13Manager, G13Error> {
-        let context = Context::new()?;
-
         Ok(G13Manager {
-            context
+            hid_api: HidApi::new()?
         })
     }
 
     pub fn discover(&mut self) -> Result<Vec<G13>, G13Error> {
-        self.context.devices()?.iter()
-            .filter(|device| {
-                if let Ok(descriptor) = device.device_descriptor() {
-                    descriptor.vendor_id() == G13_VENDOR_ID && descriptor.product_id() == G13_PRODUCT_ID
-                } else {
-                    false
-                }
-            })
-            .map(G13::new)
+        self.hid_api.device_list()
+            .filter(|device| device.vendor_id() == G13_VENDOR_ID && device.product_id() == G13_PRODUCT_ID)
+            .map(|device| G13::new(&self.hid_api, device))
             .collect()
     }
 }
