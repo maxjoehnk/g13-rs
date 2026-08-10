@@ -4,6 +4,8 @@ use thiserror::Error;
 pub enum G13Error {
     #[error("HID error: {0}")]
     Transport(#[from] hidapi::HidError),
+    #[error("Timeout error")]
+    Timeout,
     #[error("Invalid key response")]
     InvalidKeyResponse,
     #[error("Problem sending data. Result: {0}")]

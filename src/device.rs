@@ -62,7 +62,10 @@ impl G13 {
     /// This will block until an input is received or until `timeout` is reached.
     pub fn read(&self, timeout: Duration) -> Result<Response, G13Error> {
         let mut data = [0; G13_REPORT_SIZE];
-        let _ = self.device.read_timeout(&mut data, timeout.as_millis().clamp(0, i32::MAX as u128) as i32)?;
+        let length = self.device.read_timeout(&mut data, timeout.as_millis().clamp(0, i32::MAX as u128) as i32)?;
+        if length == 0 {
+            return Err(G13Error::Timeout);
+        }
 
         let mut value: u64 = data[7] as u64;
         value <<= 8;
