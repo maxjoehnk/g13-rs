@@ -1,6 +1,6 @@
 [package]
 name = "g13"
-version = "0.2.0"
+version = "0.2.1"
 authors = ["Max Jöhnk <maxjoehnk@gmail.com>"]
 edition = "2018"
 description = "hidapi based crate to communicate with a Logitech G13 without accompanying drivers."
